@@ -1,32 +1,70 @@
 package com.dependencygraph.depgraph;
 
-import org.json.JSONArray;
-import org.json.JSONException;
 
-import java.io.BufferedReader;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+
 import java.io.FileReader;
-import java.io.IOException;
 
 public class GraphReader {
 
-    public static JSONArray getGraph() {
-        FileReader fr = null;
-        String[] textData = new String[1];
-        try {
-            fr = new FileReader("E:/Projects/dep-graph/src/main/java/com/dependencygraph/depgraph/dependency-graph.json");
-            BufferedReader text = new BufferedReader(fr);
-            textData[0] = text.readLine();
-            text.close();
+    public static JSONObject getGraph() {
 
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-        }
-        JSONArray jsonArray = null;
+        JSONParser parser = new JSONParser();
+        JSONObject jsonGraph = null;
+        JSONObject finalGraph = new JSONObject();
+        JSONArray nodes = new JSONArray();
+        JSONArray edges = null;
+        JSONArray finalNodes = new JSONArray();
+        JSONArray finalEdges = new JSONArray();
+
         try {
-            jsonArray = new JSONArray(textData[0]);
-        } catch (JSONException e) {
+            Object graph = parser.parse(new FileReader("dependency-graph.json"));
+
+            jsonGraph = (JSONObject) graph;
+
+            nodes = (JSONArray) jsonGraph.get("artifacts");
+            int i=0;
+            for (Object node : nodes){
+                JSONObject jsonNode  = (JSONObject) node;
+                if(!jsonNode.get("groupId").toString().contains("cambio")){
+                    continue;
+                }
+                jsonNode.put("name", jsonNode.get("id"));
+                jsonNode.remove("id");
+                jsonNode.put("id", Integer.parseInt(jsonNode.get("numericId").toString())-1);
+                jsonNode.remove("numericId");
+
+                finalNodes.add(jsonNode);
+
+                i++;
+            }
+
+            edges = (JSONArray) jsonGraph.get("dependencies");
+            int j=0;
+            for (Object edge : edges){
+                JSONObject jsonEdge  = (JSONObject) edge;
+                if(!( jsonEdge.get("from").toString().contains("cambio") && jsonEdge.get("to").toString().contains("cambio") )){
+                    continue;
+                }
+                jsonEdge.put("source", jsonEdge.get("numericFrom"));
+                jsonEdge.remove("numericFrom");
+                jsonEdge.put("target", jsonEdge.get("numericTo"));
+                jsonEdge.remove("numericTo");
+
+                finalEdges.add(jsonEdge);
+
+                j++;
+            }
+
+            finalGraph.put("nodes", finalNodes);
+            finalGraph.put("links", finalEdges);
+
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        return jsonArray;
+        return finalGraph;
     }
 }

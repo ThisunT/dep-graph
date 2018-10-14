@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.json.JSONArray;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,8 +26,9 @@ public class GreetingController {
         return new Graph(nodes, links);
     }
 
+    @CrossOrigin
     @RequestMapping("/raw")
-    public JSONArray rawGraph(){
+    public JSONObject rawGraph(){
         return GraphReader.getGraph();
     }
 }
